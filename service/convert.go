@@ -421,7 +421,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 			if oaiUsage != nil {
 				claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
 					Type:  "message_delta",
-					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
+					Usage: BuildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
 						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
@@ -449,7 +449,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 			}
 			claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
 				Type:  "message_delta",
-				Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
+				Usage: BuildClaudeUsageFromOpenAIUsage(oaiUsage),
 				Delta: &dto.ClaudeMediaMessage{
 					StopReason: common.GetPointer[string](stopReason),
 				},
@@ -473,7 +473,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 			if oaiUsage != nil {
 				claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
 					Type:  "message_delta",
-					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
+					Usage: BuildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
 						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
@@ -599,7 +599,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 			if oaiUsage != nil {
 				claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
 					Type:  "message_delta",
-					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
+					Usage: BuildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
 						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
@@ -650,7 +650,7 @@ func ResponseOpenAI2Claude(openAIResponse *dto.OpenAITextResponse, info *relayco
 	}
 	claudeResponse.Content = contents
 	claudeResponse.StopReason = stopReason
-	claudeResponse.Usage = buildClaudeUsageFromOpenAIUsage(&openAIResponse.Usage)
+	claudeResponse.Usage = BuildClaudeUsageFromOpenAIUsage(&openAIResponse.Usage)
 
 	return claudeResponse
 }
