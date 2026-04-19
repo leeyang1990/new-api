@@ -423,7 +423,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 					Type:  "message_delta",
 					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
-						StopReason: common.GetPointer[string](stopReasonOpenAI2Claude(info.FinishReason)),
+						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
 				})
 			}
@@ -443,7 +443,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 		}
 		if oaiUsage != nil {
 			stopOpenBlocks()
-			stopReason := stopReasonOpenAI2Claude(info.FinishReason)
+			stopReason := StopReasonOpenAI2Claude(info.FinishReason)
 			if stopReason == "" {
 				stopReason = "end_turn"
 			}
@@ -475,7 +475,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 					Type:  "message_delta",
 					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
-						StopReason: common.GetPointer[string](stopReasonOpenAI2Claude(info.FinishReason)),
+						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
 				})
 			}
@@ -601,7 +601,7 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 					Type:  "message_delta",
 					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
 					Delta: &dto.ClaudeMediaMessage{
-						StopReason: common.GetPointer[string](stopReasonOpenAI2Claude(info.FinishReason)),
+						StopReason: common.GetPointer[string](StopReasonOpenAI2Claude(info.FinishReason)),
 					},
 				})
 			}
@@ -626,7 +626,7 @@ func ResponseOpenAI2Claude(openAIResponse *dto.OpenAITextResponse, info *relayco
 		Model: openAIResponse.Model,
 	}
 	for _, choice := range openAIResponse.Choices {
-		stopReason = stopReasonOpenAI2Claude(choice.FinishReason)
+		stopReason = StopReasonOpenAI2Claude(choice.FinishReason)
 		if choice.FinishReason == "tool_calls" {
 			for _, toolUse := range choice.Message.ParseToolCalls() {
 				claudeContent := dto.ClaudeMediaMessage{}
@@ -655,7 +655,7 @@ func ResponseOpenAI2Claude(openAIResponse *dto.OpenAITextResponse, info *relayco
 	return claudeResponse
 }
 
-func stopReasonOpenAI2Claude(reason string) string {
+func StopReasonOpenAI2Claude(reason string) string {
 	return reasonmap.OpenAIFinishReasonToClaudeStopReason(reason)
 }
 
