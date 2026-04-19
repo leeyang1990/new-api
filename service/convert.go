@@ -223,7 +223,7 @@ func generateStopBlock(index int) *dto.ClaudeResponse {
 	}
 }
 
-func buildClaudeUsageFromOpenAIUsage(oaiUsage *dto.Usage) *dto.ClaudeUsage {
+func BuildClaudeUsageFromOpenAIUsage(oaiUsage *dto.Usage) *dto.ClaudeUsage {
 	if oaiUsage == nil {
 		return nil
 	}
@@ -468,10 +468,22 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 			oaiUsage := openAIResponse.Usage
 			if oaiUsage == nil {
 				oaiUsage = info.ClaudeConvertInfo.Usage
-				// Some upstreams emit finish_reason first, then send a final usage-only chunk.
-				// Defer closing until usage is available so the final message_delta carries it.
-				return claudeResponses
 			}
+			stopOpenBlocks()
+			if oaiUsage != nil {
+				claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
+					Type:  "message_delta",
+					Usage: buildClaudeUsageFromOpenAIUsage(oaiUsage),
+					Delta: &dto.ClaudeMediaMessage{
+						StopReason: common.GetPointer[string](stopReasonOpenAI2Claude(info.FinishReason)),
+					},
+				})
+			}
+			claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
+				Type: "message_stop",
+			})
+			info.ClaudeConvertInfo.Done = true
+			return claudeResponses
 		}
 
 		var claudeResponse dto.ClaudeResponse

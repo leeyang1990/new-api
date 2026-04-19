@@ -220,7 +220,22 @@ func HandleFinalResponse(c *gin.Context, info *relaycommon.RelayInfo, lastStream
 		for _, resp := range claudeResponses {
 			_ = helper.ClaudeData(c, *resp)
 		}
-		info.ClaudeConvertInfo.Done = true
+
+		if !info.ClaudeConvertInfo.Done && info.FinishReason != "" {
+			if usage != nil {
+				_ = helper.ClaudeData(c, dto.ClaudeResponse{
+					Type:  "message_delta",
+					Usage: service.BuildClaudeUsageFromOpenAIUsage(usage),
+					Delta: &dto.ClaudeMediaMessage{
+						StopReason: common.GetPointer[string](service.StopReasonOpenAI2Claude(info.FinishReason)),
+					},
+				})
+			}
+			_ = helper.ClaudeData(c, dto.ClaudeResponse{
+				Type: "message_stop",
+			})
+			info.ClaudeConvertInfo.Done = true
+		}
 
 	case types.RelayFormatGemini:
 		var streamResponse dto.ChatCompletionsStreamResponse
