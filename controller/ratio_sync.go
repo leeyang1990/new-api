@@ -43,6 +43,10 @@ const (
 	modelsDevHost               = "models.dev"
 	modelsDevPath               = "/api.json"
 	modelsDevInputCostRatioBase = 1000.0
+	openRouterPresetID          = -102
+	openRouterPresetName        = "OpenRouter 价格预设"
+	openRouterPresetBaseURL     = "https://openrouter.ai"
+	openRouterPresetEndpoint    = "https://openrouter.ai/api/v1/models"
 )
 
 func nearlyEqual(a, b float64) bool {
@@ -226,10 +230,16 @@ func FetchUpstreamRatios(c *gin.Context) {
 			defer func() { <-sem }()
 
 			isOpenRouter := chItem.Endpoint == "openrouter"
+			// OpenRouter public price preset: /api/v1/models is public (no auth),
+			// so we can fetch and convert it without a real channel/key.
+			isOpenRouterPreset := chItem.ID == openRouterPresetID
 
 			endpoint := chItem.Endpoint
 			var fullURL string
-			if isOpenRouter {
+			if isOpenRouterPreset {
+				fullURL = openRouterPresetEndpoint
+				isOpenRouter = true
+			} else if isOpenRouter {
 				fullURL = chItem.BaseURL + "/v1/models"
 			} else if strings.HasPrefix(endpoint, "http://") || strings.HasPrefix(endpoint, "https://") {
 				fullURL = endpoint
@@ -258,8 +268,11 @@ func FetchUpstreamRatios(c *gin.Context) {
 				return
 			}
 
-			// OpenRouter requires Bearer token auth
-			if isOpenRouter && chItem.ID != 0 {
+			// OpenRouter public preset uses the public /api/v1/models endpoint
+			// (no auth). A real OpenRouter channel still requires a Bearer token.
+			if isOpenRouterPreset {
+				// no auth needed for the public price preset
+			} else if isOpenRouter && chItem.ID != 0 {
 				dbCh, err := model.GetChannelById(chItem.ID, true)
 				if err != nil {
 					ch <- upstreamResult{Name: uniqueName, Err: "failed to get channel key: " + err.Error()}
@@ -1018,6 +1031,13 @@ func GetSyncableChannels(c *gin.Context) {
 		ID:      modelsDevPresetID,
 		Name:    modelsDevPresetName,
 		BaseURL: modelsDevPresetBaseURL,
+		Status:  1,
+	})
+
+	syncableChannels = append(syncableChannels, dto.SyncableChannel{
+		ID:      openRouterPresetID,
+		Name:    openRouterPresetName,
+		BaseURL: openRouterPresetBaseURL,
 		Status:  1,
 	})
 
